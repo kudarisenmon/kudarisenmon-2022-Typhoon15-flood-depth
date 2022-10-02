@@ -50,16 +50,24 @@
 <p>これは<a href="https://www.cnh.shizuoka.ac.jp/">静岡大学防災総合センター</a>の北村晃寿教授が2022年9月30日に公開した<a href="https://www.cnh.shizuoka.ac.jp/news/20220930/">「2022年9月24日に発生した台風15号による静岡市の巴川の洪水浸水域の浸水深」の緊急調査</a>の資料をトレースしてデータ化したものです。</p>
 <p>浸水深1.0m以上をオレンジ色、2.0m以上を赤色の丸印で表示しています。クリックで浸水深の値を表示します。</p>
 <p>GeoJSON形式のデータは<a href="https://gist.github.com/kudarisenmon/379458c787f28037dc0eb77a73b39b39">GitHub Gist</a>に置いてあります。</p>
-<p><a href="https://disaportal.gsi.go.jp/">ハザードマップポータルサイト</a>の重ねるハザードマップから「洪水浸水想定区域（想定最大規模）」データを使用しています。</p>
+<p><a href="https://disaportal.gsi.go.jp/">ハザードマップポータルサイト</a>の重ねるハザードマップから「洪水浸水想定区域（想定最大規模）」データを使用しています。<br>
+	巴川下流域精密標高段彩図は月野うさはかせ様が公開されていたものを利用しています。</p>
+<blockquote class="twitter-tweet"><p lang="ja" dir="ltr">最後に巴川下流域精密標高段彩図（1200dpi）地理院地図の文字が消えたように見えるかもしれないが、拡大すると見える。<a href="https://t.co/VHHWuL8cgm">https://t.co/VHHWuL8cgm</a></p>&mdash; 月野うさはかせ Prof.Lièvre (@usa_hakase) <a href="https://twitter.com/usa_hakase/status/1576217271898210304?ref_src=twsrc%5Etfw">October 1, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 <p align="center"><a href="https://disaportal.gsi.go.jp/"><img src="https://disaportal.gsi.go.jp/hazardmap/banner/img/banner2_160_50.png"/></a></p>
 
 <script>
 	var map = L.map('map');
-	var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		minZoom: 13,
 		maxZoom: 18,
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
+	var topo = L.tileLayer('./tile/{z}/{x}/{y}.png', {
+		minZoom: 13,
+		maxZoom: 18,
+		maxNativeZoom: 17,
+		attribution: '<a href="https://www.dropbox.com/s/n670d2bvi6oar3r/%E5%B7%B4%E5%B7%9D%E4%B8%8B%E6%B5%81%E5%9F%9F%E9%AB%98%E8%A7%A3%E5%83%8F%E5%BA%A6.pdf?dl=0">小山真人(静岡大学)</a>'
+	});
 
 	var flood = L.tileLayer('https://disaportaldata.gsi.go.jp/raster/01_flood_l2_shinsuishin_data/{z}/{x}/{y}.png', {
 		opacity: 0.6,
@@ -68,6 +76,15 @@
 		maxNativeZoom: 17,
 		attribution: '<a href="https://www2.wagmap.jp/shizuoka-hazard/Portal">静岡市</a>'
 	}).addTo(map);
+
+	var baseMaps = {
+	    "OpenStreetMap": osm,
+    	"巴川下流域精密標高段彩図": topo
+	};
+	var overlayMaps = {
+    	"洪水浸水想定区域（想定最大規模）": flood
+	};
+	var layerControl = L.control.layers(baseMaps, overlayMaps, {collapsed: false}).addTo(map);
 
 	$.getJSON("https://gist.githubusercontent.com/kudarisenmon/379458c787f28037dc0eb77a73b39b39/raw/2022-Typhoon15-flood-depth.geojson", function(data) {
 		let point = L.geoJson(data, {
